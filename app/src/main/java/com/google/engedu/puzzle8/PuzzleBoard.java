@@ -30,7 +30,7 @@ public class PuzzleBoard {
                      if(y==x && x==NUM_TILES-1)
                          tiles.add(null);
                      else {
-                         tiles.add(new PuzzleTile(Bitmap.createBitmap(scaledBitmap, xCoord, yCoord, chunkWidth, chunkHeight), 3 * x + y));
+                         tiles.add(new PuzzleTile(Bitmap.createBitmap(scaledBitmap, xCoord, yCoord, chunkWidth, chunkHeight), NUM_TILES * x + y));
                          xCoord += chunkWidth;
                      }
                 }
@@ -113,7 +113,29 @@ public class PuzzleBoard {
     }
 
     public ArrayList<PuzzleBoard> neighbours() {
-        return null;
+        int emptyX = 0, emptyY = 0;
+        ArrayList<PuzzleBoard> neighbourBoard = new ArrayList<PuzzleBoard>();
+        for (int i = 0; i < NUM_TILES; i++) {
+            for (int j = 0; j < NUM_TILES; j++) {
+                if (tiles.get(i + NUM_TILES * j) == null) {
+                    emptyX = i;
+                    emptyY = j;
+                    j = NUM_TILES;
+                    break;
+                }
+            }
+        }
+
+        for (int[] delta : NEIGHBOUR_COORDS) {
+            int nullX = emptyX + delta[0];
+            int nullY = emptyY + delta[1];
+            if (nullX >= 0 && nullX < NUM_TILES && nullY >= 0 && nullY < NUM_TILES){
+                PuzzleBoard newBoard = new PuzzleBoard(this);
+                newBoard.swapTiles(emptyX + NUM_TILES* emptyY, nullX + NUM_TILES*nullY);
+                neighbourBoard.add(newBoard);
+            }
+        }
+        return neighbourBoard;
     }
 
     public int priority() {
