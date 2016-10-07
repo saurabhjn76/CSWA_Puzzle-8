@@ -2,6 +2,7 @@ package com.google.engedu.puzzle8;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -15,9 +16,28 @@ public class PuzzleBoard {
             { 0, -1 },
             { 0, 1 }
     };
-    private ArrayList<PuzzleTile> tiles;
+    private ArrayList<PuzzleTile> tiles = new ArrayList<PuzzleTile>();
 
     PuzzleBoard(Bitmap bitmap, int parentWidth) {
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, parentWidth, parentWidth, true);
+        int chunkHeight = parentWidth/NUM_TILES;
+       int  chunkWidth = parentWidth/NUM_TILES;
+        int yCoord = 0;
+        for(int x=0; x<NUM_TILES; x++){
+            int xCoord = 0;
+            for(int y=0; y<NUM_TILES; y++){
+                 {
+                     if(y==x && x==NUM_TILES-1)
+                         tiles.add(null);
+                     else {
+                         tiles.add(new PuzzleTile(Bitmap.createBitmap(scaledBitmap, xCoord, yCoord, chunkWidth, chunkHeight), 3 * x + y));
+                         xCoord += chunkWidth;
+                     }
+                }
+            }
+            yCoord += chunkHeight;
+        }
+        Log.e("Tiles Length",tiles.toString()+"");
     }
 
     PuzzleBoard(PuzzleBoard otherBoard) {
