@@ -10,6 +10,9 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import java.util.Random;
 
 public class PuzzleBoardView extends View {
@@ -82,5 +85,43 @@ public class PuzzleBoardView extends View {
     }
 
     public void solve() {
+        ArrayList<PuzzleBoard> solution = new ArrayList<PuzzleBoard>();
+        Comparator<PuzzleBoard> puzzleBoardComparator =  new Comparator<PuzzleBoard>() {
+            @Override
+            public int compare(PuzzleBoard lhs, PuzzleBoard rhs) {
+                if(lhs.priority()>rhs.priority())
+                    return  1;
+                else if(rhs.priority()>lhs.priority())
+                    return -1;
+                else
+                return 0;
+            }
+        };
+        PriorityQueue<PuzzleBoard> boardsQueue = new PriorityQueue<PuzzleBoard>(10000,puzzleBoardComparator);
+        puzzleBoard.steps=0;
+        puzzleBoard.previousBoard=null;
+        boardsQueue.add(puzzleBoard);
+        while(!boardsQueue.isEmpty()){
+            PuzzleBoard pathBoard= boardsQueue.poll();
+            if(pathBoard.priority()-pathBoard.steps!=0){
+                for(PuzzleBoard board:pathBoard.neighbours()){
+                    boardsQueue.add(board);
+                }
+            }
+            else{
+                solution.add(pathBoard);
+                while(pathBoard!=null){
+                    if(pathBoard.getPreviousBoard()==null)
+                        break;
+                    solution.add(pathBoard.getPreviousBoard());
+                    pathBoard=pathBoard.getPreviousBoard();
+                }
+                Collections.reverse(solution);
+                animation=solution;
+                invalidate();
+                break;
+
+            }
+        }
     }
 }

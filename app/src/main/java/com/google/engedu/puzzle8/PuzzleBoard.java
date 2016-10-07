@@ -10,6 +10,8 @@ import java.util.ArrayList;
 public class PuzzleBoard {
 
     private static final int NUM_TILES = 3;
+    int steps=0;
+    PuzzleBoard previousBoard =null;
     private static final int[][] NEIGHBOUR_COORDS = {
             { -1, 0 },
             { 1, 0 },
@@ -42,10 +44,15 @@ public class PuzzleBoard {
 
     PuzzleBoard(PuzzleBoard otherBoard) {
         tiles = (ArrayList<PuzzleTile>) otherBoard.tiles.clone();
+        steps= otherBoard.steps;
+        previousBoard= otherBoard;
     }
 
     public void reset() {
         // Nothing for now but you may have things to reset once you implement the solver.
+    }
+    public  PuzzleBoard getPreviousBoard(){
+        return this.previousBoard;
     }
 
     @Override
@@ -139,7 +146,19 @@ public class PuzzleBoard {
     }
 
     public int priority() {
-        return 0;
+        int manhattanDistance=0;
+        int realPosition=0;
+        for(int i=0;i<NUM_TILES;i++){
+            for(int j=0;j<NUM_TILES;j++){
+                if(tiles.get(i+NUM_TILES*j)!=null){
+                    realPosition=tiles.get(i+NUM_TILES*j).getNumber();
+                    manhattanDistance+=Math.abs(realPosition/NUM_TILES-j);
+                    manhattanDistance+=Math.abs(realPosition%NUM_TILES-i);
+
+                }
+            }
+        }
+        return manhattanDistance+steps;
     }
 
 }
