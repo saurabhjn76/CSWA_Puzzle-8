@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class PuzzleBoard {
 
-    private static final int NUM_TILES = 3;
+    private static final int NUM_TILES = 4;
     int steps=0;
     PuzzleBoard previousBoard =null;
     private static final int[][] NEIGHBOUR_COORDS = {
@@ -18,7 +18,7 @@ public class PuzzleBoard {
             { 0, -1 },
             { 0, 1 }
     };
-    private ArrayList<PuzzleTile> tiles = new ArrayList<PuzzleTile>();
+    public ArrayList<PuzzleTile> tiles = new ArrayList<PuzzleTile>();
 
     PuzzleBoard(Bitmap bitmap, int parentWidth) {
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, parentWidth, parentWidth, true);

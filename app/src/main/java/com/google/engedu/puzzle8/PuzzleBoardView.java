@@ -12,6 +12,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.PriorityQueue;
 import java.util.Random;
 
@@ -21,6 +22,7 @@ public class PuzzleBoardView extends View {
     private PuzzleBoard puzzleBoard;
     private ArrayList<PuzzleBoard> animation;
     private Random random = new Random();
+    private HashSet<String> addedBoards = new HashSet<String>();
 
     public PuzzleBoardView(Context context) {
         super(context);
@@ -30,7 +32,7 @@ public class PuzzleBoardView extends View {
 
     public void initialize(Bitmap imageBitmap) {
         int width = getWidth();
-        Log.e("ParentWidth",width+"");
+        Log.e("ParentWidth", width + "");
         puzzleBoard = new PuzzleBoard(imageBitmap, width);
     }
 
@@ -58,8 +60,8 @@ public class PuzzleBoardView extends View {
     public void shuffle() {
         if (animation == null && puzzleBoard != null) {
             // Do something. Then:
-            for(int i=0; i<NUM_SHUFFLE_STEPS;i++){
-                puzzleBoard=puzzleBoard.neighbours().get(random.nextInt(puzzleBoard.neighbours().size()));
+            for (int i = 0; i < NUM_SHUFFLE_STEPS; i++) {
+                puzzleBoard = puzzleBoard.neighbours().get(random.nextInt(puzzleBoard.neighbours().size()));
             }
             puzzleBoard.reset();
             invalidate();
@@ -69,7 +71,7 @@ public class PuzzleBoardView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (animation == null && puzzleBoard != null) {
-            switch(event.getAction()) {
+            switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if (puzzleBoard.click(event.getX(), event.getY())) {
                         invalidate();
@@ -86,42 +88,58 @@ public class PuzzleBoardView extends View {
 
     public void solve() {
         ArrayList<PuzzleBoard> solution = new ArrayList<PuzzleBoard>();
-        Comparator<PuzzleBoard> puzzleBoardComparator =  new Comparator<PuzzleBoard>() {
+        addedBoards.clear();
+        Comparator<PuzzleBoard> puzzleBoardComparator = new Comparator<PuzzleBoard>() {
             @Override
             public int compare(PuzzleBoard lhs, PuzzleBoard rhs) {
-                if(lhs.priority()>rhs.priority())
-                    return  1;
-                else if(rhs.priority()>lhs.priority())
+                if (lhs.priority() > rhs.priority())
+                    return 1;
+                else if (rhs.priority() > lhs.priority())
                     return -1;
                 else
-                return 0;
+                    return 0;
             }
         };
-        PriorityQueue<PuzzleBoard> boardsQueue = new PriorityQueue<PuzzleBoard>(10000,puzzleBoardComparator);
-        puzzleBoard.steps=0;
-        puzzleBoard.previousBoard=null;
+        PriorityQueue<PuzzleBoard> boardsQueue = new PriorityQueue<PuzzleBoard>(10000, puzzleBoardComparator);
+        puzzleBoard.steps = 0;
+        PuzzleBoard previous = null;
+        puzzleBoard.previousBoard = null;
         boardsQueue.add(puzzleBoard);
-        while(!boardsQueue.isEmpty()){
-            PuzzleBoard pathBoard= boardsQueue.poll();
-            if(pathBoard.priority()-pathBoard.steps!=0){
-                for(PuzzleBoard board:pathBoard.neighbours()){
-                    boardsQueue.add(board);
+        while (!boardsQueue.isEmpty()) {
+            PuzzleBoard pathBoard = boardsQueue.poll();
+            addedBoards.add(boardToString(pathBoard));
+            if (pathBoard.priority() - pathBoard.steps != 0) {
+                for (PuzzleBoard board : pathBoard.neighbours()) {
+                    if (!board.equals(previous) && !addedBoards.contains(boardToString(board)))
+                        boardsQueue.add(board);
                 }
-            }
-            else{
+            } else {
                 solution.add(pathBoard);
-                while(pathBoard!=null){
-                    if(pathBoard.getPreviousBoard()==null)
+                while (pathBoard != null) {
+                    if (pathBoard.getPreviousBoard() == null)
                         break;
                     solution.add(pathBoard.getPreviousBoard());
-                    pathBoard=pathBoard.getPreviousBoard();
+                    pathBoard = pathBoard.getPreviousBoard();
                 }
                 Collections.reverse(solution);
-                animation=solution;
+                animation = solution;
                 invalidate();
                 break;
 
             }
+            previous = pathBoard;
         }
+    }
+
+    public String boardToString(PuzzleBoard puzzleBoard) {
+        String s = "";
+        for (PuzzleTile tile : puzzleBoard.tiles) {
+            if (tile == null) {
+                s += "null";
+            } else {
+                s += (tile.getNumber() + "");
+            }
+        }
+        return s;
     }
 }
